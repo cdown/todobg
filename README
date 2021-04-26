@@ -1,0 +1,9 @@
+Warning: jank ahead. Definitely doesn't work portably, especially with multi
+monitor setups.
+
+This is a small script to display a daily todo list on the root X window. The
+idea is that you hook up `todobg --recreate` to a timer at (say) midnight, and
+tick things off with `$EDITOR .cache/todobg` as you get the chance. Compared to
+a phone app, this works pretty well for me since it's in my face.
+
+Requires imagemagick, xrandr, awk, and maybe some other stuff.

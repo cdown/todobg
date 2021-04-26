@@ -1,0 +1,54 @@
+#!/bin/bash -x
+
+: "${TBG_FONT:=DejaVu-Sans-Mono}"
+: "${TBG_CURRENT:="$HOME/.cache/todobg"}"
+: "${TBG_INPUT_DIR:="$HOME/.config/todobg"}"
+: "${TBG_BORDER_SIZE:=120}"
+
+get_resolution() {
+    xrandr --current |
+        sed -n 's/.* connected [ a-z]*\([0-9]*\)x\([0-9]*\)+.*/\1x\2/p'
+}
+
+get_border_adjusted_resolution() {
+    get_resolution |
+        awk -v border="$TBG_BORDER_SIZE" -Fx \
+            '{ print $1 - (border * 2) "x" $2 - (border * 2) }'
+}
+
+create_bg_from_stdin() {
+    local temp
+    temp=$(mktemp --suffix .png)
+    convert \
+        -extent "$(get_border_adjusted_resolution)" \
+        -font "$TBG_FONT" -background black -fill white \
+        -border "$TBG_BORDER_SIZE" -bordercolor black -pointsize 40 \
+        label:@- "$temp" && printf '%s\n' "$temp"
+
+}
+
+# Reset -- hook up to a systemd timer/cron
+
+if [[ $1 == --recreate ]]; then
+    for file in "$TBG_INPUT_DIR"/*; do
+        # Format: hhmm-name
+        header=${file##*/}
+        IFS=- read -r time name <<< "$header"
+        printf '%s (%s):\n\n' "${name^}" "$time"
+
+        while IFS= read -r line; do
+            printf -- '- %s\n' "$line"
+        done < "$file"
+
+        printf '\n'
+    done > "$TBG_CURRENT"
+
+    exit 0
+fi
+
+# Otherwise, update the display
+
+file="$(create_bg_from_stdin < "$TBG_CURRENT")"
+[[ $file ]] || exit
+display -window root "$file"
+rm -f -- "$file"
