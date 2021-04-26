@@ -46,9 +46,16 @@ if [[ $1 == --recreate ]]; then
     exit 0
 fi
 
-# Otherwise, update the display
+# Otherwise, we're in display daemon mode
 
-file="$(create_bg_from_stdin < "$TBG_CURRENT")"
-[[ $file ]] || exit
-display -window root "$file"
-rm -f -- "$file"
+inotifywait \
+    --event create --event delete \
+    --event modify --event move \
+    --monitor --quiet \
+    "$TBG_CURRENT" |
+    while read _; do
+        file="$(create_bg_from_stdin < "$TBG_CURRENT")"
+        [[ $file ]] || exit
+        display -window root "$file"
+        rm -f -- "$file"
+    done

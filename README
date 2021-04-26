@@ -6,4 +6,4 @@ idea is that you hook up `todobg --recreate` to a timer at (say) midnight, and
 tick things off with `$EDITOR .cache/todobg` as you get the chance. Compared to
 a phone app, this works pretty well for me since it's in my face.
 
-Requires imagemagick, xrandr, awk, and maybe some other stuff.
+Requires imagemagick, inotify-tools, xrandr, awk, and maybe some other stuff.
